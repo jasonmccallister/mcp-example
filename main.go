@@ -1,37 +1,30 @@
-// A generated module for McpExample functions
-//
-// This module has been generated via dagger init and serves as a reference to
-// basic module structure as you get started with Dagger.
-//
-// Two functions have been pre-created. You can modify, delete, or add to them,
-// as needed. They demonstrate usage of arguments and return types using simple
-// echo and grep commands. The functions can be called from the dagger CLI or
-// from one of the SDKs.
-//
-// The first line in this comment block is a short description line and the
-// rest is a long description with more detail on the module's purpose or usage,
-// if appropriate. All modules should have a short description.
-
 package main
 
 import (
-	"context"
-	"dagger/mcp-example/internal/dagger"
+	"io"
+	"net/http"
 )
 
 type McpExample struct{}
 
-// Returns a container that echoes whatever string argument is provided
-func (m *McpExample) ContainerEcho(stringArg string) *dagger.Container {
-	return dag.Container().From("alpine:latest").WithExec([]string{"echo", stringArg})
+// Greets the individal with the provided name
+func (m *McpExample) GreetSomeone(name string) string {
+	return "Hello, " + name + "!"
 }
 
-// Returns lines that match a pattern in the files of the provided Directory
-func (m *McpExample) GrepDir(ctx context.Context, directoryArg *dagger.Directory, pattern string) (string, error) {
-	return dag.Container().
-		From("alpine:latest").
-		WithMountedDirectory("/mnt", directoryArg).
-		WithWorkdir("/mnt").
-		WithExec([]string{"grep", "-R", pattern, "."}).
-		Stdout(ctx)
+func (m *McpExample) GetAllPosts() (string, error) {
+	url := "https://jsonplaceholder.typicode.com/posts"
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return string(body), nil
 }
