@@ -1,30 +1,41 @@
 package main
 
 import (
-	"io"
+	"encoding/json"
 	"net/http"
 )
 
 type McpExample struct{}
+
+type Post struct {
+	UserID int    `json:"userId"`
+	ID     int    `json:"id"`
+	Title  string `json:"title"`
+	Body   string `json:"body"`
+}
 
 // Greets the individal with the provided name
 func (m *McpExample) GreetSomeone(name string) string {
 	return "Hello, " + name + "!"
 }
 
-func (m *McpExample) GetAllPosts() (string, error) {
-	url := "https://jsonplaceholder.typicode.com/posts"
-
-	resp, err := http.Get(url)
+// Get all of the names of the posts
+func (m *McpExample) GetAllPosts() ([]string, error) {
+	resp, err := http.Get("https://jsonplaceholder.typicode.com/posts")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
+	posts := []Post{}
+	if err := json.NewDecoder(resp.Body).Decode(&posts); err != nil {
+		return nil, err
 	}
 
-	return string(body), nil
+	titles := []string{}
+	for _, post := range posts {
+		titles = append(titles, post.Title)
+	}
+
+	return titles, nil
 }
