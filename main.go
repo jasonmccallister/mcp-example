@@ -39,3 +39,19 @@ func (m *McpExample) GetAllPosts() ([]string, error) {
 
 	return titles, nil
 }
+
+// Returns the post with the provided ID
+func (m *McpExample) GetPostByID(id int) (*Post, error) {
+	resp, err := http.Get("https://jsonplaceholder.typicode.com/posts/" + string(id))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	post := &Post{}
+	if err := json.NewDecoder(resp.Body).Decode(&post); err != nil {
+		return nil, err
+	}
+
+	return post, nil
+}
